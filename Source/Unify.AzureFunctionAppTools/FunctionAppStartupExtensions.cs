@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unify.AzureFunctionAppTools.ExceptionHandling;
 using Unify.AzureFunctionAppTools.Preprocessing;
+using System.ComponentModel;
 
 namespace Unify.AzureFunctionAppTools
 {
@@ -60,10 +61,8 @@ namespace Unify.AzureFunctionAppTools
         {
             return services.AddTransient<IUnhandledErrorFactory>(sp =>
             {
-                bool includeException = includeExceptionOverride == null 
-                    ? sp.GetRequiredService<IHostingEnvironment>().IsDevelopment() 
-                    : includeExceptionOverride.Value;
-
+                bool includeException = includeExceptionOverride == null ? sp.GetRequiredService<IHostingEnvironment>().IsDevelopment() : includeExceptionOverride.Value;
+                
                 return new DefaultUnhandledErrorFactory(sp.GetService<ILogger<IUnhandledErrorFactory>>(), includeException);
             });
         }

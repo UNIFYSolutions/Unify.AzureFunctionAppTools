@@ -1,22 +1,11 @@
 # Azure Function Apps Development Guide
 
-## TODO
-
-* clean up
-    * comments - missing params, typeparams, returns or altogether
-    * string literal usage to constant/resource file
-* create a few example preprocessors
-* create any preprocessors for common cases
-* unit test tools lib
-* azure config loading
-* the rest of this documentation
-
 ## Quickstart
 
 ### Project Setup
 
-1. Create `Azure Function` project, type `Azure Function v3 (.NET Core)`
-1. Update package reference `Microsoft.NET.Sdk.Functions` to latest (currently v3.0.11).
+1. Create `Azure Function` project, type `Azure Function v4 (.NET 6)`
+1. Update package reference `Microsoft.NET.Sdk.Functions` to latest
 1. Add package reference to `Microsoft.Azure.Functions.Extensions`
 1. Add package reference to `Unify.AzureFunctionAppTools`
 
