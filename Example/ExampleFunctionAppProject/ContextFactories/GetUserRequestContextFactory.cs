@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
-using Unify.AzureFunctionAppTools.Preprocessing;
 
 namespace ExampleFunctionAppProject
 {
@@ -18,10 +16,7 @@ namespace ExampleFunctionAppProject
         /// </summary>
         /// <param name="unhandledErrorFactory">Handler of uncaught errors.</param>
         /// <param name="preprocessorCollection">Preprocessors to run.</param>
-        public GetUserRequestContextFactory(
-            IUnhandledErrorFactory unhandledErrorFactory,
-            IRequestPreprocessorCollection<GetUserRequestContextFactory> preprocessorCollection) 
-                : base(unhandledErrorFactory, preprocessorCollection)
+        public GetUserRequestContextFactory(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 

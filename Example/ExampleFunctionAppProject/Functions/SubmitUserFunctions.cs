@@ -1,12 +1,11 @@
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unify.AzureFunctionAppTools;
 
 namespace ExampleFunctionAppProject
 {
@@ -14,13 +13,16 @@ namespace ExampleFunctionAppProject
     {
         private readonly SubmitUserRequestContextFactory _RequestReader;
         private readonly SubmitUserFunctionHandler _Handler;
+        private readonly ILogger<SubmitUserFunctions> _Logger;
 
         public SubmitUserFunctions(
             SubmitUserRequestContextFactory requestReader,
-            SubmitUserFunctionHandler handler)
+            SubmitUserFunctionHandler handler,
+            ILogger<SubmitUserFunctions> logger)
         {
             _RequestReader = requestReader ?? throw new ArgumentNullException(nameof(requestReader));
             _Handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace ExampleFunctionAppProject
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req)
         {
-            FunctionRequestContext<SubmitUserRequestBody> context = await _RequestReader.Create(req);
+            FunctionRequestContext<SubmitUserRequestBody> context = await _RequestReader.Create(req, _Logger);
             return await _Handler.Handle(context);
         }
     }

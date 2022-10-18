@@ -6,8 +6,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
-using Unify.AzureFunctionAppTools.Preprocessing;
 using UserData = MockUserSource.User;
 using UserModel = ExampleFunctionAppProject.Models.User;
 
@@ -22,6 +20,7 @@ namespace ExampleFunctionAppProject
     public class GetUserFunctionHandler : RequestHandlerBase
     {
         private readonly IUserSource _UserSource;
+        private readonly ILogger<GetUserFunctionHandler> _Log;
 
         /// <summary>
         /// Constructor for the handler.
@@ -29,13 +28,11 @@ namespace ExampleFunctionAppProject
         /// <param name="userSource">A user source.</param>
         /// <param name="unhandledErrorFactory">Handler for unhandled errors.</param>
         /// <param name="log">The log writer to use when logging status messages.</param>
-        public GetUserFunctionHandler(
-            IUserSource userSource, 
-            IUnhandledErrorFactory unhandledErrorFactory,
-            IHandlerPreprocessorCollection<GetUserFunctionHandler> preprocessorCollection,
-            ILogger<GetUserFunctionHandler> log) 
-                : base(unhandledErrorFactory, preprocessorCollection, log)
+        public GetUserFunctionHandler(IUserSource userSource,
+            IServiceProvider serviceProvider,
+            ILogger<GetUserFunctionHandler> log) : base(serviceProvider, true)
         {
+            _Log = log ?? throw new ArgumentNullException(nameof(userSource));
             _UserSource = userSource ?? throw new ArgumentNullException(nameof(userSource));
         }
 
@@ -64,7 +61,7 @@ namespace ExampleFunctionAppProject
             {
                 // Handle any expected exception here. Any unexpected excpetion should be let through to be caught on the base
                 // class and handled by the uncaught error handler. 
-                Log.LogError($"Error occured handling get user request: {e}");
+                _Log.LogError($"Error occured handling get user request: {e}");
                 return new BadRequestObjectResult(new MessageResponseBody { Message = "Why did you divide by zero?" });
             }
         }
@@ -73,7 +70,6 @@ namespace ExampleFunctionAppProject
         /// <inheritdoc />
         public override async Task<IActionResult> HandleValidationError(FunctionRequestContext context)
         {
-            Log.LogError($"An error occured validating the request. Exception: {context.Exception}");
             return new BadRequestObjectResult(new MessageResponseBody
             {
                 Message = $"An error occured validating the request."
@@ -83,6 +79,8 @@ namespace ExampleFunctionAppProject
         /// <inheritdoc />
         public override async Task<IActionResult> HandleValidationFailure(FunctionRequestContext context)
         {
+
+            _Log.LogError($"An error occured validating the request. Exception: {context.Exception}");
             return new BadRequestObjectResult(new ValidationFailureResponseBody
             {
                 Issues = context.HeaderValidationResult.Issues

@@ -1,11 +1,8 @@
 using ExampleFunctionAppProject;
-using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
-using Unify.AzureFunctionAppTools.Preprocessing;
 
 namespace ExampleFunctionApp.UnitTests
 {
@@ -17,14 +14,16 @@ namespace ExampleFunctionApp.UnitTests
     public class GetUserContextFactoryTestFixture
     {
         /// <summary>
-        /// Test: Query parameters are correctly validated.
+        /// Given: A Valid Query Parameter
+        /// When: ValidateQueryParameters is triggered
+        /// Then: Return A RequestValidationStatus.Passed result
         /// </summary>
         [Test]
         public void ValidQueryParamsValidationTest()
         {
+
             var contextFactory = new GetUserRequestContextFactory(
-                Mock.Of<IUnhandledErrorFactory>(),
-                Mock.Of<RequestPreprocessorCollection<GetUserRequestContextFactory>>());
+                HelperMethods.MockUnhandledErrorFactoryProvider());
 
             IDictionary<string, string[]> testParams = new Dictionary<string, string[]>
             {
@@ -37,7 +36,9 @@ namespace ExampleFunctionApp.UnitTests
         }
 
         /// <summary>
-        /// Test: User id query parameter fails validation when it is provided as an invalid format.
+        /// Given: An invalid query parameter
+        /// When: ValidateQueryParameters is triggered
+        /// Then: Return A RequestValidationStatus.Failed result
         /// </summary>
         [Test]
         [TestCase("notAGuid", TestName = "InvalidUserIdQueryParamValidationTest_NotAGuid")]
@@ -45,9 +46,8 @@ namespace ExampleFunctionApp.UnitTests
         [TestCase(null, TestName = "InvalidUserIdQueryParamValidationTest_Null")]
         public void InvalidUserIdQueryParamValidationTest(string invalidValue)
         {
-            var contextFactory = new GetUserRequestContextFactory(
-                Mock.Of<IUnhandledErrorFactory>(),
-                Mock.Of<RequestPreprocessorCollection<GetUserRequestContextFactory>>());
+
+            var contextFactory = new GetUserRequestContextFactory(HelperMethods.MockUnhandledErrorFactoryProvider());
 
             IDictionary<string, string[]> testParams = new Dictionary<string, string[]>
             {

@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
-using Unify.AzureFunctionAppTools.Preprocessing;
 
 namespace ExampleFunctionAppProject
 {
@@ -24,11 +22,7 @@ namespace ExampleFunctionAppProject
         /// <param name="unhandledErrorFactory">Handler of uncaught errors.</param>
         /// <param name="preprocessorCollection">Collection of request preprocessors.</param>
         /// <param name="submitUserConfig">Configuration for submit user requests.</param>
-        public SubmitUserRequestContextFactory(
-            IUnhandledErrorFactory unhandledErrorFactory,
-            IRequestPreprocessorCollection<SubmitUserRequestContextFactory> preprocessorCollection,
-            IOptions<SubmitUserConfiguration> submitUserConfig) 
-                : base(unhandledErrorFactory, preprocessorCollection)
+        public SubmitUserRequestContextFactory(IOptions<SubmitUserConfiguration> submitUserConfig, IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _SubmitUserConfig = submitUserConfig ?? throw new ArgumentNullException(nameof(submitUserConfig));
         }

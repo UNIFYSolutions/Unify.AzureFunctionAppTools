@@ -1,15 +1,13 @@
 using ExampleFunctionAppProject;
 using ExampleFunctionAppProject.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MockUserSource;
 using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
-using Unify.AzureFunctionAppTools.Preprocessing;
 
 namespace ExampleFunctionApp.UnitTests
 {
@@ -22,9 +20,12 @@ namespace ExampleFunctionApp.UnitTests
     {
         /// <summary>
         /// Test: User can be retrieved.
+        /// Given: A valid User
+        /// When: That user is submitted
+        /// Then: Ensure they've been properly added
         /// </summary>
         [Test]
-        public async void HandlerSubmitUserTest()
+        public async Task HandlerSubmitUserTest()
         {
             var context = new FunctionRequestContext<SubmitUserRequestBody>
             {
@@ -36,7 +37,7 @@ namespace ExampleFunctionApp.UnitTests
                 }
             };
 
-            (SubmitUserFunctionHandler handler, Mock<IUserSource> userSourceMock, List<User> addedUserList) = GetSut();
+            (SubmitUserFunctionHandler handler, Mock<IUserSource> userSourceMock, List<User> addedUserList) = HelperMethods.GetSut();
             IActionResult response = await handler.HandleRequest(context);
 
             // Check result type type.
@@ -53,25 +54,6 @@ namespace ExampleFunctionApp.UnitTests
             Assert.AreEqual(addedUserList.Count, 1);
             Assert.AreEqual(addedUserList[0].Id, responseBody.UserId);
             Assert.AreEqual(addedUserList[0].Name, "Jimmy");
-        }
-
-        private (SubmitUserFunctionHandler, Mock<IUserSource> userSourceMock, List<User>) GetSut() 
-        {
-            var addedUsers = new List<User>();
-
-            var userSourceMock = new Mock<IUserSource>();
-            userSourceMock.Setup(m => m.AddUser(It.IsAny<User>())).Callback<User>(user => addedUsers.Add(user));
-
-            return (
-                new SubmitUserFunctionHandler(
-                    userSourceMock.Object, 
-                    Mock.Of<IUnhandledErrorFactory>(),
-                    Mock.Of<HandlerPreprocessorCollection<SubmitUserFunctionHandler, SubmitUserRequestBody>>(), 
-                    Mock.Of<ILogger<SubmitUserFunctionHandler>>()),
-                userSourceMock,
-                addedUsers
-            );
-
         }
     }
 }

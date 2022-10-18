@@ -1,13 +1,10 @@
 ﻿using ExampleFunctionAppProject.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MockUserSource;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Unify.AzureFunctionAppTools;
-using Unify.AzureFunctionAppTools.ExceptionHandling;
-using Unify.AzureFunctionAppTools.Preprocessing;
 using UserData = MockUserSource.User;
 
 namespace ExampleFunctionAppProject
@@ -30,11 +27,9 @@ namespace ExampleFunctionAppProject
         /// <param name="unhandledErrorFactory">Handler for unhandled errors.</param>
         /// <param name="log">The log writer to use when logging status messages.</param>
         public SubmitUserFunctionHandler(
-            IUserSource userSource, 
-            IUnhandledErrorFactory unhandledErrorFactory,
-            IHandlerPreprocessorCollection<SubmitUserFunctionHandler, SubmitUserRequestBody> preprocessorCollection,
-            ILogger<SubmitUserFunctionHandler> log)
-                : base(unhandledErrorFactory, preprocessorCollection, log)
+            IUserSource userSource,
+            IServiceProvider serviceProvider)
+                : base(serviceProvider)
         {
             _UserSource = userSource ?? throw new ArgumentNullException(nameof(userSource));
         }
@@ -55,11 +50,10 @@ namespace ExampleFunctionAppProject
 
                 return new OkObjectResult(new SubmitUserResponseBody { UserId = user.Id });
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 // This method should only catch and handle exception that require special handling. Bad requests inputs should already be handled, 
                 // and the exception handling middleware will deal with any non-caught exceptions from this method and handle generically.
-                Log.LogError($"Error occurred handling get user request: {e}");
                 return new BadRequestObjectResult(new MessageResponseBody { Message = "Why did you divide by zero?" });
             }
         }
@@ -87,7 +81,6 @@ namespace ExampleFunctionAppProject
         /// <inheritdoc />
         public override async Task<IActionResult> HandleValidationError(FunctionRequestContext<SubmitUserRequestBody> context)
         {
-            Log.LogError($"An error occurred validating the request. Exception: {context.Exception}");
             return new BadRequestObjectResult(new MessageResponseBody
             {
                 Message = $"An error occurred validating the request."

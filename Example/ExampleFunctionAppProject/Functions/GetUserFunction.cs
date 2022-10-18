@@ -1,11 +1,12 @@
-using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Unify.AzureFunctionAppTools;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+using Unify.AzureFunctionAppTools;
 
 namespace ExampleFunctionAppProject.Functions
 {
@@ -13,14 +14,18 @@ namespace ExampleFunctionAppProject.Functions
     {
         private readonly GetUserRequestContextFactory _ContextFactory;
         private readonly GetUserFunctionHandler _Handler;
+        private readonly ILogger<GetUserFunction> _Logger;
 
         public GetUserFunction(
             GetUserRequestContextFactory contextFactory,
             GetUserFunctionHandler handler,
-            IConfiguration config)
+            IConfiguration config,
+            ILogger<GetUserFunction> logger
+            )
         {
             _ContextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
             _Handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -40,7 +45,7 @@ namespace ExampleFunctionAppProject.Functions
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v1/user")] HttpRequest req)
         {
-            FunctionRequestContext context = await _ContextFactory.Create(req);
+            FunctionRequestContext context = await _ContextFactory.Create(req, _Logger);
             return await _Handler.Handle(context);
         }
     }
